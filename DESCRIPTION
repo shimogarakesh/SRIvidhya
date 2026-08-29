@@ -1,0 +1,35 @@
+Package: srividhya
+Type: Package
+Title: SRIvidhya: Site-Adaptive Alternate Wetting and Drying Decision Support Tools for Rice
+Version: 0.1.0
+Authors@R: person("Rakesh", "Tiwari", email = "shimogarakesh@gmail.com", role = c("aut", "cre"))
+Description: Implements a proposed site-adaptive alternate wetting and drying (AWD)
+    decision-support and monitoring, reporting, and verification (MRV) framework for
+    irrigated rice, as described in Tiwari et al. (commentary manuscript, submitted).
+    SRIvidhya replaces a single universal AWD water-table depth with transparent,
+    locally calibrated functions covering variety-specific root development, profile
+    representative water-table decline, root-safe drainage ceilings, dual depth/tension
+    drainage verification, and soil-organic-carbon-scaled drainage-event frequency.
+    SRIvidhya is a decision-support tool. It is not a universal methane emission-factor
+    model, not an autonomous carbon-credit calculator, and not a replacement for direct
+    greenhouse-gas measurement where such measurement is feasible. All scientifically
+    sensitive parameters (maximum rooting depth, root growth-rate parameters, percolation
+    rate, root-safety margin, drainage-depth ceiling, soil-water-potential threshold, and
+    soil-organic-carbon frequency anchors) must be supplied by the user with an explicit
+    evidence tier; the package does not hard-code universal defaults for these values.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends: R (>= 4.1.0)
+Imports:
+    stats
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://github.com/shimogarakesh/srividhya
+BugReports: https://github.com/shimogarakesh/srividhya/issues
