@@ -1,0 +1,2 @@
+field_id,stratum_id,date,DAT,water_table_depth_cm,soil_water_potential_kpa,Eh_mV,rainfall_mm,irrigation_status,observation_quality_flag
+,,,,,,,,,

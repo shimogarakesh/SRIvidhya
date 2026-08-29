@@ -1,0 +1,2 @@
+stratum_id,test_id,timestamp,elapsed_hours,water_table_depth_cm,tube_depth_cm,rainfall_mm,irrigation_on,measurement_quality_flag
+,,,,,,,,

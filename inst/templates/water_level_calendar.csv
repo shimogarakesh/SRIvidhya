@@ -1,0 +1,2 @@
+stratum_id,date,DAT,root_depth_cm,safe_depth_ceiling_cm,percolation_model,expected_time_to_target_hours,expected_time_to_target_days,verification_rule,verification_status,redox_diagnostic,nominal_frequency_events_season,frequency_basis,evidence_tier_summary,provisional_warning,data_quality_flag
+,,,,,,,,,,,,,,,

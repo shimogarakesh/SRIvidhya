@@ -1,0 +1,126 @@
+---
+title: "SRIvidhya: End-to-End Synthetic Stratum Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SRIvidhya: End-to-End Synthetic Stratum Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Purpose
+
+This vignette walks through the SRIvidhya v0.1 workflow end to end using a
+**synthetic** stratum. All numbers in this document are illustrative
+placeholders, explicitly tagged `evidence_tier = "provisional_default"`.
+They are not agronomic recommendations and must never be substituted for
+local measurement or calibration.
+
+```{r setup}
+library(srividhya)
+```
+
+## 1. Define a project stratum
+
+A stratum groups fields sharing cultivar, establishment method, soil
+profile, irrigation setting, and materially relevant management conditions.
+
+```{r}
+stratum <- srividhya_define_stratum(
+  stratum_id = "SYNTHETIC_A",
+  cultivar = "Synthetic cultivar (example only)",
+  establishment_method = "transplanted",
+  soil_profile_id = "SYNTHETIC_PROFILE_CLAY",
+  irrigation_setting = "controlled irrigation",
+  management_notes = "Synthetic example; not calibration data.",
+  root_parameters = list(
+    R_max_cm = 30, R0_cm = 3, k_day_inv = 0.12,
+    evidence_tier = "provisional_default",
+    evidence_source = "Synthetic demonstration only"
+  ),
+  percolation_parameters = list(
+    P_cm_h = 0.18,
+    evidence_tier = "provisional_default",
+    evidence_source = "Synthetic demonstration only"
+  ),
+  safety_parameters = list(
+    alpha = 0.50, D_max_cm = 12, psi_threshold_kpa = -20,
+    verification_rule = "either",
+    evidence_tier = "provisional_default"
+  ),
+  soc_parameters = list(
+    SOC_g_kg = 10, f_low_events_season = 3, f_high_events_season = 4,
+    evidence_tier = "provisional_default"
+  )
+)
+stratum
+```
+
+Note that every parameter group reports `provisional_default`. This is by
+design: SRIvidhya never assumes empirical defaults for `R_max`, `k`, `t50`,
+`alpha`, `D_max`, `psi_threshold`, `f_low`, or `f_high`.
+
+## 2. Root-depth trajectory and safe drainage ceiling
+
+```{r}
+dat_seq <- seq(0, 60, by = 5)
+root_depth <- srividhya_root_depth(
+  dat = dat_seq, R_max_cm = stratum$root_parameters$R_max_cm,
+  k_day_inv = stratum$root_parameters$k_day_inv,
+  R0_cm = stratum$root_parameters$R0_cm
+)
+safe_depth <- srividhya_safe_depth(
+  root_depth, alpha = stratum$safety_parameters$alpha,
+  D_max_cm = stratum$safety_parameters$D_max_cm
+)
+data.frame(DAT = dat_seq, root_depth_cm = round(root_depth, 1),
+           safe_depth_ceiling_cm = round(safe_depth, 1))
+```
+
+Early in the season, the root-safety constraint (`alpha * R(t)`) is more
+restrictive than the agronomic ceiling (`D_max_cm`); later, once roots are
+established, the ceiling itself becomes the binding constraint.
+
+## 3. Time to reach the safe depth
+
+```{r}
+srividhya_time_to_target(target_depth_cm = safe_depth,
+                          P_cm_h = stratum$percolation_parameters$P_cm_h,
+                          units = "hours")
+```
+
+## 4. SOC-scaled seasonal drainage frequency
+
+```{r}
+srividhya_soc_frequency(
+  SOC_g_kg = stratum$soc_parameters$SOC_g_kg,
+  f_low_events_season = stratum$soc_parameters$f_low_events_season,
+  f_high_events_season = stratum$soc_parameters$f_high_events_season
+)
+```
+
+## 5. Generate the full calendar
+
+```{r}
+calendar <- srividhya_generate_calendar(stratum, dat_seq = c(5, 20, 35, 50))
+calendar[, c("DAT", "root_depth_cm", "safe_depth_ceiling_cm",
+             "expected_time_to_target_hours", "verification_status",
+             "data_quality_flag")]
+```
+
+## 6. Farmer-facing instruction
+
+```{r}
+cat(srividhya_farmer_instruction(calendar[3, ]))
+```
+
+## What this vignette does not show
+
+This vignette does not fit `k` or `t50` from repeated root observations, does
+not fit a depth-dependent percolation curve from field data, and does not
+propagate parameter uncertainty via Monte Carlo simulation. Those
+capabilities are planned for subsequent SRIvidhya milestones and will
+operate on the same `srividhya_stratum` object shown here.
